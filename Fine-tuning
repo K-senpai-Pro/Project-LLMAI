@@ -1,0 +1,33 @@
+from transformers import Trainer, TrainingArguments, GPT2Tokenizer, GPT2LMHeadModel
+from datasets import load_dataset
+
+# โหลดข้อมูลที่ต้องการใช้ฝึก (เช่น, ใช้ dataset 'wikitext' ของ Hugging Face)
+dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model = GPT2LMHeadModel.from_pretrained("gpt2")
+
+# การทำ tokenization ข้อมูล
+def tokenize_function(examples):
+    return tokenizer(examples["text"], return_special_tokens_mask=True, truncation=True, padding="max_length", max_length=128)
+
+tokenized_datasets = dataset.map(tokenize_function, batched=True, remove_columns=["text"])
+
+# ตั้งค่า TrainingArguments
+training_args = TrainingArguments(
+    output_dir="./gpt2-finetuned",   # โฟลเดอร์สำหรับบันทึกโมเดล
+    overwrite_output_dir=True,       # เขียนทับโฟลเดอร์เดิมหากมีอยู่แล้ว
+    num_train_epochs=3,              # จำนวนรอบในการฝึก
+    per_device_train_batch_size=8,   # ขนาด batch ที่ใช้
+    save_steps=500,                  # จำนวนก้าวที่บันทึกโมเดล
+    save_total_limit=2,              # บันทึกโมเดลสูงสุดกี่ชุด
+)
+
+# ใช้ Trainer ในการฝึกโมเดล
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets["train"],
+)
+
+# เริ่มการฝึกโมเดล
+trainer.train()
