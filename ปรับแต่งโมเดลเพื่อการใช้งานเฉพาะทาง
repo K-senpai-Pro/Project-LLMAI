@@ -1,0 +1,7 @@
+# บันทึกโมเดลที่ปรับจูนแล้ว
+model.save_pretrained("./gpt2-finetuned")
+tokenizer.save_pretrained("./gpt2-finetuned")
+
+# โหลดโมเดลที่บันทึกไว้มาใช้งาน
+model = GPT2LMHeadModel.from_pretrained("./gpt2-finetuned")
+tokenizer = GPT2Tokenizer.from_pretrained("./gpt2-finetuned")
